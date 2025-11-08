@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creative Coding with p5.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: "Courier New", monospace;
+        background: #1a1a1a;
+        color: #ffffff;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+        color: #ed225d;
+        font-size: 2em;
+      }
+
+      .subtitle {
+        color: #888;
+        margin-bottom: 20px;
+        font-size: 0.9em;
+      }
+
+      .controls {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      button {
+        padding: 10px 20px;
+        background: #ed225d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        transition: all 0.3s;
+      }
+
+      button:hover {
+        background: #ff3366;
+        transform: translateY(-2px);
+      }
+
+      button.active {
+        background: #2d7ff9;
+        box-shadow: 0 0 10px rgba(45, 127, 249, 0.5);
+      }
+
+      #sketch-container {
+        margin-top: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      /* Interactive Controls Panel */
+      .control-panel {
+        background: #2a2a2a;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        max-width: 800px;
+        width: 100%;
+        border: 2px solid #333;
+      }
+
+      .control-panel h3 {
+        margin: 0 0 15px 0;
+        color: #2d7ff9;
+        font-size: 1.1em;
+      }
+
+      .control-group {
+        margin-bottom: 15px;
+      }
+
+      .control-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #aaa;
+        font-size: 0.85em;
+      }
+
+      .control-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .control-group input[type="range"] {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: #444;
+        outline: none;
+        -webkit-appearance: none;
+      }
+
+      .control-group input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #ed225d;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .control-group input[type="range"]::-webkit-slider-thumb:hover {
+        background: #ff3366;
+      }
+
+      .control-group input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #ed225d;
+        cursor: pointer;
+        border: none;
+      }
+
+      .value-display {
+        min-width: 50px;
+        text-align: right;
+        color: #fff;
+        font-size: 0.9em;
+      }
+
+      .preset-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+      }
+
+      .preset-buttons button {
+        padding: 6px 12px;
+        font-size: 12px;
+        background: #444;
+      }
+
+      .preset-buttons button:hover {
+        background: #555;
+      }
+
+      .info {
+        max-width: 800px;
+        margin-top: 20px;
+        padding: 15px;
+        background: #2a2a2a;
+        border-radius: 5px;
+        text-align: center;
+        border: 1px solid #333;
+      }
+
+      .info p {
+        margin: 8px 0;
+        line-height: 1.6;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Creative Coding Playground</h1>
+    <p class="subtitle">Interactive p5.js Sketches with Live Controls</p>
+
+    <div class="controls">
+      <button onclick="loadSketch('waves')" class="active" id="btn-waves">
+        Waves
+      </button>
+      <button onclick="loadSketch('particles')" id="btn-particles">
+        Particles
+      </button>
+      <button onclick="loadSketch('spiral')" id="btn-spiral">Spiral</button>
+      <button onclick="loadSketch('grid')" id="btn-grid">Dancing Grid</button>
+      <button onclick="loadSketch('mouse')" id="btn-mouse">Mouse Trail</button>
+    </div>
+
+    <div id="sketch-container"></div>
+
+    <!-- Interactive Control Panels (one for each sketch) -->
+    <div id="controls-waves" class="control-panel">
+      <h3>Wave Controls</h3>
+      <div class="control-group">
+        <label
+          >Number of Layers:
+          <span class="value-display" id="val-wave-layers">10</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="wave-layers"
+            min="3"
+            max="20"
+            value="10"
+            step="1"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Wave Speed:
+          <span class="value-display" id="val-wave-speed">0.05</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="wave-speed"
+            min="0.01"
+            max="0.15"
+            value="0.05"
+            step="0.01"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Wave Height:
+          <span class="value-display" id="val-wave-amplitude">80</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="wave-amplitude"
+            min="40"
+            max="150"
+            value="80"
+            step="10"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Layer Spacing:
+          <span class="value-display" id="val-wave-spacing">30</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="wave-spacing"
+            min="15"
+            max="50"
+            value="30"
+            step="5"
+          />
+        </div>
+      </div>
+      <div class="preset-buttons">
+        <button onclick="applyWavePreset('calm')">Calm Ocean</button>
+        <button onclick="applyWavePreset('choppy')">Choppy Sea</button>
+        <button onclick="applyWavePreset('dense')">Dense Waves</button>
+        <button onclick="applyWavePreset('reset')">Reset</button>
+      </div>
+    </div>
+
+    <div id="controls-particles" class="control-panel hidden">
+      <h3>Particle Controls</h3>
+      <div class="control-group">
+        <label
+          >Spawn Rate:
+          <span class="value-display" id="val-particle-spawn">2</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="particle-spawn"
+            min="1"
+            max="10"
+            value="2"
+            step="1"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Fade Speed:
+          <span class="value-display" id="val-particle-fade">2</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="particle-fade"
+            min="1"
+            max="5"
+            value="2"
+            step="0.5"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Attraction Radius:
+          <span class="value-display" id="val-particle-radius">200</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="particle-radius"
+            min="100"
+            max="400"
+            value="200"
+            step="20"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Attraction Strength:
+          <span class="value-display" id="val-particle-strength"
+            >0.0001</span
+          ></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="particle-strength"
+            min="0.00001"
+            max="0.0005"
+            value="0.0001"
+            step="0.00001"
+          />
+        </div>
+      </div>
+      <div class="preset-buttons">
+        <button onclick="applyParticlePreset('gentle')">Gentle Flow</button>
+        <button onclick="applyParticlePreset('explosive')">Explosive</button>
+        <button onclick="applyParticlePreset('magnetic')">
+          Super Magnetic
+        </button>
+        <button onclick="applyParticlePreset('reset')">Reset</button>
+      </div>
+    </div>
+
+    <div id="controls-spiral" class="control-panel hidden">
+      <h3>Spiral Controls</h3>
+      <div class="control-group">
+        <label
+          >Spiral Speed:
+          <span class="value-display" id="val-spiral-speed">0.1</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="spiral-speed"
+            min="0.05"
+            max="0.3"
+            value="0.1"
+            step="0.01"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Spiral Tightness:
+          <span class="value-display" id="val-spiral-tight">0.5</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="spiral-tight"
+            min="0.2"
+            max="2"
+            value="0.5"
+            step="0.1"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Max Points:
+          <span class="value-display" id="val-spiral-points">500</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="spiral-points"
+            min="200"
+            max="2000"
+            value="500"
+            step="100"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Color Speed:
+          <span class="value-display" id="val-spiral-color">10</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="spiral-color"
+            min="5"
+            max="30"
+            value="10"
+            step="1"
+          />
+        </div>
+      </div>
+      <div class="preset-buttons">
+        <button onclick="applySpiralPreset('tight')">Tight Spiral</button>
+        <button onclick="applySpiralPreset('loose')">Loose Spiral</button>
+        <button onclick="applySpiralPreset('fast')">Fast Rainbow</button>
+        <button onclick="applySpiralPreset('reset')">Reset</button>
+      </div>
+    </div>
+
+    <div id="controls-grid" class="control-panel hidden">
+      <h3>Grid Controls</h3>
+      <div class="control-group">
+        <label
+          >Columns:
+          <span class="value-display" id="val-grid-cols">20</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="grid-cols"
+            min="10"
+            max="40"
+            value="20"
+            step="2"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Rows: <span class="value-display" id="val-grid-rows">15</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="grid-rows"
+            min="8"
+            max="30"
+            value="15"
+            step="1"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Noise Scale:
+          <span class="value-display" id="val-grid-noise">0.1</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="grid-noise"
+            min="0.05"
+            max="0.3"
+            value="0.1"
+            step="0.01"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Rotation Speed:
+          <span class="value-display" id="val-grid-rotation">0.01</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="grid-rotation"
+            min="0.005"
+            max="0.05"
+            value="0.01"
+            step="0.005"
+          />
+        </div>
+      </div>
+      <div class="preset-buttons">
+        <button onclick="applyGridPreset('fine')">Fine Grid</button>
+        <button onclick="applyGridPreset('coarse')">Coarse Grid</button>
+        <button onclick="applyGridPreset('chaotic')">Chaotic</button>
+        <button onclick="applyGridPreset('reset')">Reset</button>
+      </div>
+    </div>
+
+    <div id="controls-mouse" class="control-panel hidden">
+      <h3>Mouse Trail Controls</h3>
+      <div class="control-group">
+        <label
+          >Trail Length:
+          <span class="value-display" id="val-mouse-trail">50</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="mouse-trail"
+            min="20"
+            max="100"
+            value="50"
+            step="5"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Smoothness:
+          <span class="value-display" id="val-mouse-smooth">0.1</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="mouse-smooth"
+            min="0.05"
+            max="0.3"
+            value="0.1"
+            step="0.01"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Max Line Weight:
+          <span class="value-display" id="val-mouse-weight">8</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="mouse-weight"
+            min="4"
+            max="15"
+            value="8"
+            step="1"
+          />
+        </div>
+      </div>
+      <div class="control-group">
+        <label
+          >Fade Speed:
+          <span class="value-display" id="val-mouse-fade">30</span></label
+        >
+        <div class="control-row">
+          <input
+            type="range"
+            id="mouse-fade"
+            min="10"
+            max="60"
+            value="30"
+            step="5"
+          />
+        </div>
+      </div>
+      <div class="preset-buttons">
+        <button onclick="applyMousePreset('silky')">Silky Smooth</button>
+        <button onclick="applyMousePreset('responsive')">Responsive</button>
+        <button onclick="applyMousePreset('thick')">Thick Trail</button>
+        <button onclick="applyMousePreset('reset')">Reset</button>
+      </div>
+    </div>
+
+    <div class="info">
+      <p>
+        <strong
+          >Use the sliders above to adjust parameters in real-time!</strong
+        >
+      </p>
+      <p>
+        Click the preset buttons to try different variations, or tweak values
+        yourself.
+      </p>
+      <p>
+        Open <code>sketches.js</code> to see detailed comments explaining how
+        everything works.
+      </p>
+    </div>
+
+    <script src="sketches.js"></script>
+    <script>
+      let currentSketch = null;
+      let currentSketchName = "waves";
+
+      // Load a sketch and show its controls
+      function loadSketch(sketchName) {
+        // Update button states
+        document
+          .querySelectorAll(".controls button")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.getElementById("btn-" + sketchName).classList.add("active");
+
+        // Remove previous sketch
+        if (currentSketch) {
+          currentSketch.remove();
+        }
+
+        // Clear container
+        document.getElementById("sketch-container").innerHTML = "";
+
+        // Hide all control panels
+        document.querySelectorAll(".control-panel").forEach((panel) => {
+          panel.classList.add("hidden");
+        });
+
+        // Show relevant control panel
+        document
+          .getElementById("controls-" + sketchName)
+          .classList.remove("hidden");
+
+        // Load new sketch
+        currentSketchName = sketchName;
+        currentSketch = new p5(sketches[sketchName], "sketch-container");
+
+        // Setup control listeners
+        setupControls(sketchName);
+      }
+
+      // Setup event listeners for controls
+      function setupControls(sketchName) {
+        if (sketchName === "waves") {
+          setupSlider("wave-layers", "val-wave-layers", (val) => {
+            currentSketch.updateParams({ numLayers: parseInt(val) });
+          });
+          setupSlider("wave-speed", "val-wave-speed", (val) => {
+            currentSketch.updateParams({ waveSpeed: parseFloat(val) });
+          });
+          setupSlider("wave-amplitude", "val-wave-amplitude", (val) => {
+            currentSketch.updateParams({ waveAmplitude: parseFloat(val) });
+          });
+          setupSlider("wave-spacing", "val-wave-spacing", (val) => {
+            currentSketch.updateParams({ layerSpacing: parseFloat(val) });
+          });
+        } else if (sketchName === "particles") {
+          setupSlider("particle-spawn", "val-particle-spawn", (val) => {
+            currentSketch.updateParams({ spawnRate: parseInt(val) });
+          });
+          setupSlider("particle-fade", "val-particle-fade", (val) => {
+            currentSketch.updateParams({ fadeSpeed: parseFloat(val) });
+          });
+          setupSlider("particle-radius", "val-particle-radius", (val) => {
+            currentSketch.updateParams({ attractionRadius: parseFloat(val) });
+          });
+          setupSlider("particle-strength", "val-particle-strength", (val) => {
+            currentSketch.updateParams({ attractionStrength: parseFloat(val) });
+          });
+        } else if (sketchName === "spiral") {
+          setupSlider("spiral-speed", "val-spiral-speed", (val) => {
+            currentSketch.updateParams({ spiralSpeed: parseFloat(val) });
+          });
+          setupSlider("spiral-tight", "val-spiral-tight", (val) => {
+            currentSketch.updateParams({ spiralTightness: parseFloat(val) });
+          });
+          setupSlider("spiral-points", "val-spiral-points", (val) => {
+            currentSketch.updateParams({ maxPoints: parseInt(val) });
+          });
+          setupSlider("spiral-color", "val-spiral-color", (val) => {
+            currentSketch.updateParams({ colorSpeed: parseFloat(val) });
+          });
+        } else if (sketchName === "grid") {
+          setupSlider("grid-cols", "val-grid-cols", (val) => {
+            currentSketch.updateParams({ cols: parseInt(val) });
+          });
+          setupSlider("grid-rows", "val-grid-rows", (val) => {
+            currentSketch.updateParams({ rows: parseInt(val) });
+          });
+          setupSlider("grid-noise", "val-grid-noise", (val) => {
+            currentSketch.updateParams({ noiseScale: parseFloat(val) });
+          });
+          setupSlider("grid-rotation", "val-grid-rotation", (val) => {
+            currentSketch.updateParams({ rotationSpeed: parseFloat(val) });
+          });
+        } else if (sketchName === "mouse") {
+          setupSlider("mouse-trail", "val-mouse-trail", (val) => {
+            currentSketch.updateParams({ maxTrail: parseInt(val) });
+          });
+          setupSlider("mouse-smooth", "val-mouse-smooth", (val) => {
+            currentSketch.updateParams({ smoothAmount: parseFloat(val) });
+          });
+          setupSlider("mouse-weight", "val-mouse-weight", (val) => {
+            currentSketch.updateParams({ lineWeightMax: parseFloat(val) });
+          });
+          setupSlider("mouse-fade", "val-mouse-fade", (val) => {
+            currentSketch.updateParams({ fadeAlpha: parseFloat(val) });
+          });
+        }
+      }
+
+      // Helper function to setup slider with live update
+      function setupSlider(sliderId, displayId, callback) {
+        const slider = document.getElementById(sliderId);
+        const display = document.getElementById(displayId);
+
+        slider.oninput = function () {
+          display.textContent = this.value;
+          callback(this.value);
+        };
+      }
+
+      // Preset functions for Waves
+      function applyWavePreset(preset) {
+        const presets = {
+          calm: {
+            numLayers: 6,
+            waveSpeed: 0.02,
+            waveAmplitude: 50,
+            layerSpacing: 40,
+          },
+          choppy: {
+            numLayers: 15,
+            waveSpeed: 0.08,
+            waveAmplitude: 100,
+            layerSpacing: 20,
+          },
+          dense: {
+            numLayers: 18,
+            waveSpeed: 0.04,
+            waveAmplitude: 60,
+            layerSpacing: 15,
+          },
+          reset: {
+            numLayers: 10,
+            waveSpeed: 0.05,
+            waveAmplitude: 80,
+            layerSpacing: 30,
+          },
+        };
+        if (presets[preset]) {
+          applyPresetToUI("wave", presets[preset]);
+          currentSketch.updateParams(presets[preset]);
+        }
+      }
+
+      // Preset functions for Particles
+      function applyParticlePreset(preset) {
+        const presets = {
+          gentle: {
+            spawnRate: 5,
+            fadeSpeed: 1,
+            attractionRadius: 300,
+            attractionStrength: 0.00005,
+          },
+          explosive: {
+            spawnRate: 1,
+            fadeSpeed: 4,
+            attractionRadius: 150,
+            attractionStrength: 0.00002,
+          },
+          magnetic: {
+            spawnRate: 2,
+            fadeSpeed: 2,
+            attractionRadius: 350,
+            attractionStrength: 0.0003,
+          },
+          reset: {
+            spawnRate: 2,
+            fadeSpeed: 2,
+            attractionRadius: 200,
+            attractionStrength: 0.0001,
+          },
+        };
+        if (presets[preset]) {
+          applyPresetToUI("particle", presets[preset]);
+          currentSketch.updateParams(presets[preset]);
+        }
+      }
+
+      // Preset functions for Spiral
+      function applySpiralPreset(preset) {
+        const presets = {
+          tight: {
+            spiralSpeed: 0.15,
+            spiralTightness: 0.3,
+            maxPoints: 1000,
+            colorSpeed: 8,
+          },
+          loose: {
+            spiralSpeed: 0.08,
+            spiralTightness: 1.2,
+            maxPoints: 400,
+            colorSpeed: 15,
+          },
+          fast: {
+            spiralSpeed: 0.25,
+            spiralTightness: 0.5,
+            maxPoints: 800,
+            colorSpeed: 25,
+          },
+          reset: {
+            spiralSpeed: 0.1,
+            spiralTightness: 0.5,
+            maxPoints: 500,
+            colorSpeed: 10,
+          },
+        };
+        if (presets[preset]) {
+          applyPresetToUI("spiral", presets[preset]);
+          currentSketch.updateParams(presets[preset]);
+        }
+      }
+
+      // Preset functions for Grid
+      function applyGridPreset(preset) {
+        const presets = {
+          fine: { cols: 30, rows: 22, noiseScale: 0.08, rotationSpeed: 0.008 },
+          coarse: { cols: 12, rows: 9, noiseScale: 0.2, rotationSpeed: 0.02 },
+          chaotic: {
+            cols: 25,
+            rows: 18,
+            noiseScale: 0.25,
+            rotationSpeed: 0.04,
+          },
+          reset: { cols: 20, rows: 15, noiseScale: 0.1, rotationSpeed: 0.01 },
+        };
+        if (presets[preset]) {
+          applyPresetToUI("grid", presets[preset]);
+          currentSketch.updateParams(presets[preset]);
+        }
+      }
+
+      // Preset functions for Mouse
+      function applyMousePreset(preset) {
+        const presets = {
+          silky: {
+            maxTrail: 80,
+            smoothAmount: 0.05,
+            lineWeightMax: 6,
+            fadeAlpha: 15,
+          },
+          responsive: {
+            maxTrail: 30,
+            smoothAmount: 0.2,
+            lineWeightMax: 10,
+            fadeAlpha: 40,
+          },
+          thick: {
+            maxTrail: 60,
+            smoothAmount: 0.1,
+            lineWeightMax: 15,
+            fadeAlpha: 25,
+          },
+          reset: {
+            maxTrail: 50,
+            smoothAmount: 0.1,
+            lineWeightMax: 8,
+            fadeAlpha: 30,
+          },
+        };
+        if (presets[preset]) {
+          applyPresetToUI("mouse", presets[preset]);
+          currentSketch.updateParams(presets[preset]);
+        }
+      }
+
+      // Helper to update UI sliders when preset is applied
+      function applyPresetToUI(prefix, params) {
+        const mapping = {
+          wave: {
+            numLayers: "layers",
+            waveSpeed: "speed",
+            waveAmplitude: "amplitude",
+            layerSpacing: "spacing",
+          },
+          particle: {
+            spawnRate: "spawn",
+            fadeSpeed: "fade",
+            attractionRadius: "radius",
+            attractionStrength: "strength",
+          },
+          spiral: {
+            spiralSpeed: "speed",
+            spiralTightness: "tight",
+            maxPoints: "points",
+            colorSpeed: "color",
+          },
+          grid: {
+            cols: "cols",
+            rows: "rows",
+            noiseScale: "noise",
+            rotationSpeed: "rotation",
+          },
+          mouse: {
+            maxTrail: "trail",
+            smoothAmount: "smooth",
+            lineWeightMax: "weight",
+            fadeAlpha: "fade",
+          },
+        };
+
+        Object.keys(params).forEach((key) => {
+          const suffix = mapping[prefix][key];
+          const slider = document.getElementById(`${prefix}-${suffix}`);
+          const display = document.getElementById(`val-${prefix}-${suffix}`);
+          if (slider && display) {
+            slider.value = params[key];
+            display.textContent = params[key];
+          }
+        });
+      }
+
+      // Load initial sketch on page load
+      window.addEventListener("load", () => {
+        loadSketch("waves");
+      });
+    </script>
+  </body>
+</html>
