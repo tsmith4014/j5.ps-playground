@@ -4,13 +4,15 @@ Welcome to your p5.js creative coding workspace! This is your sandbox for explor
 
 ## Check out the [What is p5.js](p5-js-guide.md) guide for more info
 
+## Live demo page here - https://tsmith4014.github.io/j5.ps-playground/
+
 ## Getting Started
 
 1. **Open `index.html` in your browser**
 
    - Just double-click the file, or
    - Use a local server: `python3 -m http.server 8000` then visit `http://localhost:8000`
-   - A live demo of what you are building is here - https://tsmith4014.github.io/j5.ps-playground/
+
 
 2. **Explore the examples**
 
