@@ -169,7 +169,7 @@ random(min, max); // Random numbers
 - **OpenProcessing**: https://openprocessing.org/ - Community of creative coders
 - **Book**: "The Nature of Code" by Daniel Shiffman (free online)
 
-## Tips from Your Coach
+## Tips
 
 1. **Start small**: Don't try to build everything at once. Master one concept before moving on.
 
@@ -195,5 +195,3 @@ Ready to create? Here's what I recommend:
 Remember: There's no "wrong" in creative coding. If it looks interesting to you, it's art!
 
 ---
-
-Need help or want to explore a specific concept? Just ask your creative coding coach!
