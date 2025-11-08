@@ -2,7 +2,7 @@
 
 Welcome to your p5.js creative coding workspace! This is your sandbox for exploring generative art, animations, and interactive visualizations.
 
-## Check out the [p5-js-guide.md](what_is_p5_js.md) guide for more info
+## Check out the [What is p5.js](p5-js-guide.md) guide for more info
 
 ## Getting Started
 
